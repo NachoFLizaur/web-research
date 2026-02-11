@@ -1,18 +1,30 @@
-# web-research-mcp
+# Web Research
 
-MCP server for web research — search the web and extract content from pages. Includes pre-built AI agents for Claude Code and OpenCode.
+A web research toolkit for AI coding assistants — an MCP server for search and content extraction, plus pre-built agents for Claude Code and OpenCode.
 
-## Features
+## What's Included
 
-- **MCP Server**: Two tools for web research (`multi_search` + `fetch_pages`)
-- **Agent Toolkit**: Pre-built web-searcher and deep-researcher agents
-- **Multi-Platform**: Install agents for Claude Code or OpenCode with one command
+This monorepo ships two npm packages:
+
+- **`web-research-mcp`** — MCP server with two tools: `multi_search` (DuckDuckGo) and `fetch_pages` (parallel content extraction)
+- **`web-research-toolkit`** — Installs pre-built AI agents and skills into your project for Claude Code or OpenCode
 
 ## Quick Start
 
-### As MCP Server
+```bash
+# Install agents for your tool
+npx web-research-toolkit install claude-code
+# or
+npx web-research-toolkit install opencode
+```
 
-Add to your MCP client configuration:
+That's it. The toolkit installer configures the MCP server for you — no separate setup needed.
+
+## MCP Server
+
+The `web-research-mcp` package provides two MCP tools. If you only want the server (without agents), add it to your MCP client config manually:
+
+**Claude Code** (`.mcp.json` in project root):
 
 ```json
 {
@@ -25,33 +37,7 @@ Add to your MCP client configuration:
 }
 ```
 
-### Install Agents for Claude Code
-
-```bash
-npx web-research-mcp install claude-code
-```
-
-This creates:
-- `.claude-plugin/plugin.json` — Plugin manifest
-- `.mcp.json` — MCP server config
-- `skills/web-search/SKILL.md` — Web search skill
-- `skills/deep-research/SKILL.md` — Deep research skill
-- `agents/web-searcher.md` — Quick web search agent
-- `agents/deep-researcher.md` — Comprehensive research agent
-
-### Install Agents for OpenCode
-
-```bash
-npx web-research-mcp install opencode
-```
-
-This creates:
-- `.opencode/agents/web-searcher.md`
-- `.opencode/agents/deep-researcher.md`
-- `.opencode/skills/web-search/SKILL.md`
-- `.opencode/skills/deep-research/SKILL.md`
-
-Then add the MCP server to your `opencode.json`:
+**OpenCode** (`opencode.json`):
 
 ```json
 {
@@ -63,14 +49,10 @@ Then add the MCP server to your `opencode.json`:
   }
 }
 ```
-
-## Tools
 
 ### multi_search
 
 Search the web using multiple queries via DuckDuckGo.
-
-**Parameters:**
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
@@ -81,9 +63,7 @@ Search the web using multiple queries via DuckDuckGo.
 
 ### fetch_pages
 
-Fetch and extract clean text from multiple web pages.
-
-**Parameters:**
+Fetch and extract clean text from multiple web pages in parallel.
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
@@ -93,64 +73,67 @@ Fetch and extract clean text from multiple web pages.
 
 **Returns:** Extracted text content, titles, and errors per URL.
 
-## Agents
+## Agents & Skills
 
-The installer writes two agents and two skills. **Agents** are entry points that define a persona and workflow. **Skills** are reusable methodology docs that agents load on demand.
+The toolkit installs **agents** (autonomous subagents with a defined workflow) and **skills** (on-demand expertise that agents load when needed).
 
-### web-searcher
+### Agents
 
-Quick web search agent for finding URLs, snippets, and answers. Uses the `web-search` skill for search methodology.
+- **`web-searcher`** — Quick web search agent. Runs a few targeted queries and returns URLs, snippets, or direct answers.
+- **`deep-researcher`** — Comprehensive multi-source research agent. Expands a research question into 10 diverse queries, searches all in parallel, fetches every result page, and synthesizes a detailed report with citations.
 
-### deep-researcher
+### Skills
 
-Comprehensive research agent that:
+- **`web-search`** — Search methodology and result handling
+- **`deep-research`** — Multi-phase research workflow
 
-1. Generates 10 diverse search queries from a research question
-2. Searches all queries in parallel via `multi_search`
-3. Fetches all returned URLs via `fetch_pages`
-4. Synthesizes findings into a detailed report with citations
+### Installation
 
-Uses the `deep-research` skill for its multi-phase research workflow.
+**Claude Code:**
+
+```bash
+npx web-research-toolkit install claude-code
+```
+
+**OpenCode:**
+
+```bash
+npx web-research-toolkit install opencode
+```
 
 ## Architecture
 
-```
-web-research-mcp/
-├── src/
-│   ├── cli.ts                  # CLI entry point — routes to server or installer
-│   ├── server/
-│   │   ├── index.ts            # MCP server setup and tool registration
-│   │   ├── tools/
-│   │   │   ├── search.ts       # multi_search implementation
-│   │   │   └── fetch.ts        # fetch_pages implementation
-│   │   └── utils/
-│   │       ├── content.ts      # HTML extraction (Readability + linkedom)
-│   │       └── url.ts          # URL deduplication
-│   └── installer/
-│       ├── index.ts            # Platform router
-│       ├── claude-code.ts      # Claude Code installer
-│       ├── opencode.ts         # OpenCode installer
-│       └── assembler.ts        # Template assembly (frontmatter + prompt body)
-├── prompts/                    # Platform-agnostic prompt bodies
-│   ├── agents/                 # Agent prompt content
-│   └── skills/                 # Skill prompt content
-└── templates/                  # Platform-specific frontmatter templates
-    ├── claude-code/            # Claude Code YAML templates + config files
-    └── opencode/               # OpenCode YAML templates
-```
+Prompts are maintained once and work across platforms:
 
-The installer assembles output files by combining a **frontmatter template** (from `templates/`) with a **prompt body** (from `prompts/`), replacing `{{placeholders}}` with agent/skill metadata. This keeps prompt content shared across platforms while allowing platform-specific configuration.
+- **Canonical prompts** in `packages/toolkit/prompts/` — pure instructions, no frontmatter
+- **Platform templates** in `packages/toolkit/templates/` — frontmatter specific to each platform
+- **Installer** assembles frontmatter + prompt body at install time, replacing `{{placeholders}}` with metadata
+
+This means adding a new platform only requires new templates — the prompt content stays shared.
 
 ## Development
 
 ```bash
-npm install
-npm run build
-npm run typecheck
-npm test
+npm install          # install all workspace deps
+npm run build        # build both packages
+npm test             # test both packages
+npm run typecheck    # type check both packages
 ```
 
-The project uses [tsup](https://tsup.egoist.dev/) for bundling and [vitest](https://vitest.dev/) for testing.
+Monorepo structure:
+
+```
+packages/
+├── mcp/       # web-research-mcp — MCP server
+└── toolkit/   # web-research-toolkit — agent installer
+```
+
+## Publishing
+
+```bash
+npm publish -w packages/mcp
+npm publish -w packages/toolkit
+```
 
 ## License
 

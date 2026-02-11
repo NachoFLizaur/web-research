@@ -54,7 +54,8 @@ describe("README", () => {
   // POSITIVE: Uses npx command (not uvx or pip)
   it("uses npx command", () => {
     // Act & Assert
-    expect(readme).toContain("npx web-research-mcp");
+    expect(readme).toContain("npx web-research-toolkit");
+    expect(readme).toContain("web-research-mcp");
   });
 
   // NEGATIVE: No references to Codex CLI (dropped platform)
