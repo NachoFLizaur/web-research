@@ -33,5 +33,26 @@
   "engines": {
     "node": ">=18"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "author": "Nacho F. Lizaur",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/NachoFLizaur/web-research.git",
+    "directory": "packages/mcp"
+  },
+  "homepage": "https://github.com/NachoFLizaur/web-research#readme",
+  "bugs": {
+    "url": "https://github.com/NachoFLizaur/web-research/issues"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "web-search",
+    "web-research",
+    "duckduckgo",
+    "content-extraction",
+    "ai-tools",
+    "claude",
+    "opencode"
+  ]
 }
